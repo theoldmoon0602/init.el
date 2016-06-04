@@ -1,27 +1,58 @@
-(require 'package) ; use package manager
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/")) ; use marmalade hosting packages
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/")) ; use melpa hosting packages
-(package-initialize) ; ready
+;;;;;
+(require 'package) ; package managerを使う設定
 
-(setq-default bidi-display-reordering nil) ; disable language which were read right to left
-(setq inhibit-splash-screen t) ; disable splash screen on launch
-(setq history-delete-duplicates t) ; don't remember same history
-(setq set-mark-command-repeat-pop t) ; back marks once C-u and some C-SPCs
+; パッケージのホスティングサイトを追加
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 
-(show-paren-mode 1) ; highlight pair pareness
-(global-hl-line-mode 1) ; coloring current line
-(global-set-key (kbd "C-h") 'delete-backward-char) ; set C-h to backsapace
-(display-time) ; show current time on mode line
+; おまじない
+(package-initialize)
 
+; 起動時のスプラッシュもなくす
+(setq inhibit-splash-screen t)
 
-(line-number-mode t) ; show line number
-(column-number-mode t) ; show column number
+; カーソルを C-u C-SPC C-SPC ...で遡れる
+(setq set-mark-command-repeat-pop t)
 
-(setq message-log-max 10000) ; remember a lot of logs
-(setq history-length 1000) ; remember a lot of history
+; 対応する括弧をハイライト
+(show-paren-mode 1)
 
-(menu-bar-mode -1) ; disable menu bar
-(tool-bar-mode -1) ; disable tool bar
-(scroll-bar-mode -1) ; disable scroll bar
+; 現在行を強調
+(global-hl-line-mode 1)
 
+; C-hはBSとして使える
+(global-set-key (kbd "C-h") 'delete-backward-char)
+
+; 現在時刻をstatus barに表示する
+(display-time)
+
+; 行番号をstatus barに表示する
+(line-number-mode t)
+; 列番号をstatus barに表示する
+(column-number-mode t)
+
+; 行左に行番号を表示する
+(global-linum-mode t)
+
+; コンソールログを10000件まで憶える
+(setq message-log-max 10000)
+; バッファの履歴を 1000件まで憶える
+(setq history-length 1000)
+
+; 画面上部のメニューバーを削除
+(menu-bar-mode -1)
+; ツールバー削除
+(tool-bar-mode -1)
+; スクロールバー削除
+(scroll-bar-mode -1)
+
+;;;;;
+; ddskkのインストール
+(package-install 'ddskk)
+
+; ddskkの設定
+(when (require 'skk nil t)
+  (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
+  (setq default-input-method "japanese")
+  (require 'skk-study))
 
