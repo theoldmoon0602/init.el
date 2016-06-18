@@ -8,8 +8,13 @@
 ; おまじない
 (package-initialize)
 
+;;;
+
 ; 起動時のスプラッシュもなくす
 (setq inhibit-splash-screen t)
+
+; 警告音を消す
+(setq ring-bell-function 'ignore)
 
 ; カーソルを C-u C-SPC C-SPC ...で遡れる
 (setq set-mark-command-repeat-pop t)
@@ -46,6 +51,9 @@
 ; スクロールバー削除
 (scroll-bar-mode -1)
 
+; デフォルトの文字コード
+(prefer-coding-system 'utf-8)
+
 ;;;;;
 ; ddskkのインストール
 (package-install 'ddskk)
@@ -56,3 +64,16 @@
   (setq default-input-method "japanese")
   (require 'skk-study))
 
+;;;;;
+;auto-completeのインストール
+(package-install 'auto-complete)
+
+; 設定
+(ac-config-default)
+
+;;;;;
+; ac-dcd のいんすとーる(auto-complete for dlang)
+(package-install 'ac-dcd)
+
+; 設定
+(add-hook 'd-mode-hook 'ac-dcd-setup)
