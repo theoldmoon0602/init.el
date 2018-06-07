@@ -1,79 +1,200 @@
-;;;;;
-(require 'package) ; package managerを使う設定
+;;;
+;;; (setq sym val) is (set 'sym val)
+;;; auto-mode-alist is map for ext and mode
+;;; (interactive) specifies this function is a command.
 
-; パッケージのホスティングサイトを追加
-(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/"))
-(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
 
-; おまじない
+;;; use package.el
+(require 'package)
+;; Add melpa to package repos
+(add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
 
-;;;
+;;; load other files
+;(setq settings-dir (expand-file-name "lisp" user-emacs-directory))
+;(add-to-list 'load-path settings-dir)
 
-; 起動時のスプラッシュもなくす
-(setq inhibit-splash-screen t)
+;;; basic settings
+(prefer-coding-system 'utf-8-unix)
+(global-font-lock-mode t)
 
-; 警告音を消す
+(setq inhibit-startup-screen t)
 (setq ring-bell-function 'ignore)
-
-; カーソルを C-u C-SPC C-SPC ...で遡れる
-(setq set-mark-command-repeat-pop t)
-
-; 対応する括弧をハイライト
 (show-paren-mode 1)
-
-; 現在行を強調
-(global-hl-line-mode 1)
-
-; C-hはBSとして使える
-(global-set-key (kbd "C-h") 'delete-backward-char)
-
-; 現在時刻をstatus barに表示する
+(global-hl-line-mode -1)
 (display-time)
 
-; 行番号をstatus barに表示する
 (line-number-mode t)
-; 列番号をstatus barに表示する
 (column-number-mode t)
-
-; 行左に行番号を表示する
 (global-linum-mode t)
+(setq linum-format "%4d \u2502 ")
 
-; コンソールログを10000件まで憶える
-(setq message-log-max 10000)
-; バッファの履歴を 1000件まで憶える
-(setq history-length 1000)
-
-; 画面上部のメニューバーを削除
 (menu-bar-mode -1)
-; ツールバー削除
 (tool-bar-mode -1)
-; スクロールバー削除
 (scroll-bar-mode -1)
 
-; デフォルトの文字コード
-(prefer-coding-system 'utf-8)
 
-;;;;;
-; ddskkのインストール
-(package-install 'ddskk)
+;; package install function
+(defun packages-install (packages)
+  (dolist (pkg packages)
+    (when (not (package-installed-p pkg))
+      (package-install pkg)))
+  (delete-other-windows))
 
-; ddskkの設定
-(when (require 'skk nil t)
-  (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
-  (setq default-input-method "japanese")
-  (require 'skk-study))
+;; install extensions if they're missing
+(defun init--install-packages ()
+  (packages-install
+   '(ido  ;; built-in completion interface
+     smex   ;; ido on M-x
+     ido-completing-read+  ;; more everywhere ido
+     ido-vertical-mode
+     flx
+     flx-ido
 
-;;;;;
-;auto-completeのインストール
-(package-install 'auto-complete)
+     ivy  ;; macher interface
+     counsel  ;; ivy on M-x
+     swiper  ;; ivy on C-s
+     find-file-in-project
+     recentf  ;; most recent used files
 
-; 設定
-(ac-config-default)
+     dumb-jump  ;; jump to definition
 
-;;;;;
-; ac-dcd のいんすとーる(auto-complete for dlang)
-(package-install 'ac-dcd)
+;     git-complete  ;; completion on git managed project
+     
 
-; 設定
-(add-hook 'd-mode-hook 'ac-dcd-setup)
+     expand-region  ;; interactively expand selection
+     popup-kill-ring
+     popup
+     pos-tip
+
+     yasnippet
+     company
+
+     flycheck
+     flycheck-pos-tip
+
+     magit
+     wgrep
+     paredit
+     smartparens
+
+     d-mode
+     company-dcd
+
+     monokai-theme
+     )))
+
+(condition-case nil
+    (init--install-packages)
+  (error
+   (package-refresh-contents)
+   (init--install-packages)))
+
+
+;;; ido
+;(require 'ido)
+;(ido-mode t)
+;(ido-everywhere t)
+;(setq ido-enable-flex-matching t)  ;; fuzzy matching
+;
+;(require 'ido-completing-read+)
+;(ido-ubiquitous-mode t)
+;
+;(require 'ido-vertical-mode)
+;(ido-vertical-mode 1)
+;
+;(require 'flx)
+;(require 'flx-ido)
+;(flx-ido-mode 1)
+;
+;(require 'smex)
+;(global-set-key (kbd "M-x") 'smex)
+
+;;; ivy
+(require 'ivy)
+(require 'swiper)
+(require 'counsel)
+(require 'flx)
+
+(ivy-mode t)
+(setq ivy-use-virtual-buffers t)
+(setq enable-recursive-minibuffers t)
+(global-set-key "\C-s" 'swiper)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+
+(setq ivy-re-builders-alist
+      '((swiper . ivy--regex-fuzzy)
+        (t . ivy--regex-plus)))
+
+;;; git-complete
+;(require 'git-complete)
+;(global-set-key (kbd "S-SPC") 'git-complete)
+
+
+;;; expand-region
+(require 'expand-region)
+(global-set-key (kbd "C-@") 'er/expand-region)
+
+;;; popup-kill-ring
+(require 'popup-kill-ring)
+(global-set-key (kbd "M-y") 'popup-kill-ring)
+
+;;; yasnippet
+;(require 'yasnippet)
+;(yas-global-mode t)
+
+;;; company
+(require 'company)
+(add-hook 'after-init-hook 'global-company-mode)
+(global-set-key (kbd "C-M-i") 'company-complete)  ;; actually, Meta-Tab
+(define-key company-active-map (kbd "C-n") 'company-select-next)
+(define-key company-active-map (kbd "C-p") 'company-select-previous)
+
+(define-key company-active-map (kbd "C-s") 'company-filter-candidates)
+(define-key company-active-map (kbd "C-i") 'company-complete-selection)
+
+
+;;; hippie-expand[built-in] abbrev completion
+(global-set-key (kbd "M-SPC ") 'hippie-expand)
+
+;;; paredit
+(require 'paredit)
+
+;;; smartparens
+(require 'smartparens-config)
+
+
+;;; useful functions
+(defun delete-this-file ()
+  "Delete current editing file, and kill buffer"
+  (interactive) 
+  (unless (buffer-file-name)
+    (error "No file is currently being edited"))
+  (when (yes-or-no-p (format "Really delete %s?"
+                             (file-name-nondirectory buffer-file-name)))
+    (delete-file (buffer-file-name))
+    (kill-this-buffer)))
+
+;;; color-theme
+(load-theme 'monokai t)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (git-complete dumb-jump dump-jump recenf find-file-in-project counsel company-dcd d-mode monokai-theme yasnippet whitespace-cleanup-mode wgrep visual-regexp smex smartparens popup-kill-ring paredit multiple-cursors markdown-mode magit ido-vertical-mode ido-completing-read+ ido-at-point hydra htmlize guide-key flycheck-pos-tip flx-ido f expand-region company browse-kill-ring))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+
+;;; language specific settings
+(require 'd-mode)
+(require 'company-dcd)
+(add-hook 'd-mode-hook 'company-dcd-mode)
